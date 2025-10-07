@@ -97,62 +97,6 @@ export const getMyPublicProjectsController = async (req, res) => {
     }
 };
 
-// export const sendInvite= async (req,res) =>{
-//     try {
-//         console.log("Checkpt1") ;
-//         const {projectId , userIdToInvite } = req.body ;
-//         const ownerId = req.user.userId ;
-
-//         const project = await Project.findOne({_id:projectId}) ;
-//         console.log("OwnerId :" , ownerId) ;
-//         console.log("ProjectId :" , projectId) ;
-//         console.log("Sending invitation to :" , userIdToInvite) ;
-
-//         const ownerName = User.findById(ownerId) ;
-//         const NewNotification = new Notification({
-//             type : 'invite' ,
-//             sender : ownerId ,
-//             receiver : userIdToInvite ,
-//             project : project ,
-//             message : `${ownerName} is inviting you to join the project : ${project.title}`
-//         })
-
-//         await NewNotification.save() ;
-//         console.log("Invite notification saved succesfully !") ;
-
-//         await User.findByIdAndUpdate(
-//             userIdToInvite ,
-//             { $push: { mynotifications: NewNotification._id } },
-//             { new: true }
-//           );
-//           console.log("Notification pushed to owner's user model");
-
-//         if(!project){
-//            return  res.status(404).json({message:"Project Not found !"}) ;
-//         }
-
-//         if(!project.owner.equals(ownerId)){
-//             return res.status(403).json({message: "Only owner of the project can send invites "}) ;
-//         }
-
-//         const alreadyInvited = project.invites.find(invites=>
-//             invites.user.toString()=== userIdToInvite
-//         ) ;
-
-//         if(alreadyInvited){
-//             return res.status(400).json({message : "User already invited !"});
-//         }
-
-//         project.invites.push({user:userIdToInvite , status : "pending"}) ;
-//         await project.save() ;
-
-//         return res.status(200).json({message : "Invite sent succesfully !"}) ;
-//     }catch(error){
-//         console.log("Error in sending invite :" , error) ;
-//         return res.status(500).json({message : "Server errror "}) ;
-//     }
-// };
-
 export const sendInvite = async (req, res) => {
   try {
       const {projectId, userIdToInvite} = req.body;
@@ -460,108 +404,6 @@ export const acceptProjectInvite = async (req, res) => {
 	}
 };
 
-// export const acceptProjectApplication = async (req, res) => {
-//   try {
-//     const { projectId, otherId, notificationId } = req.body;
-    
-//     if (!projectId || !otherId || !notificationId) {
-//       return res.status(400).json({ message: "Missing required fields" });
-//     }
-    
-//     if (!mongoose.Types.ObjectId.isValid(projectId) || 
-//         !mongoose.Types.ObjectId.isValid(otherId) ||
-//         !mongoose.Types.ObjectId.isValid(notificationId)) {
-//       return res.status(400).json({ message: "Invalid ID format" });
-//     }
-    
-//     const project = await Project.findById(projectId);
-//     if (!project) {
-//       return res.status(404).json({ message: "Project not found" });
-//     }
-    
-//     // Find the notification
-//     const notification = await Notification.findById(notificationId);
-//     if (!notification) {
-//       return res.status(404).json({ message: "Notification not found" });
-//     }
-    
-//     // Check if this is a valid application notification
-//     if (notification.type !== 'application') {
-//       return res.status(403).json({ message: "Invalid notification type" });
-//     }
-    
-//     // Make sure the notification is for this project
-//     if (notification.project.toString() !== projectId) {
-//       return res.status(403).json({ message: "Notification does not match this project" });
-//     }
-    
-//     // Ensure the applicant (sender) is the otherId
-//     if (notification.sender.toString() !== otherId) {
-//       return res.status(403).json({ message: "Invalid applicant ID" });
-//     }
-    
-//     // Check if project is full
-//     if (project.members.length >= project.teamSize) {
-//       return res.status(400).json({ message: "Project team is already full" });
-//     }
-    
-//     // Check if user is already a member
-//     const memberIds = project.members.map(id => id.toString());
-//     if (memberIds.includes(otherId)) {
-//       return res.status(400).json({ message: "User is already a member of this project" });
-//     }
-    
-//     // Add the user to members
-//     project.members.push(otherId);
-    
-//     // Update the applicant status in the project
-//     const applicantIndex = project.applicants.findIndex(
-//       applicant => applicant.user && applicant.user.toString() === otherId
-//     );
-    
-//     if (applicantIndex !== -1) {
-//       project.applicants[applicantIndex].status = 'approved';
-//     }
-    
-//     // Update available slots
-//     const approvedApplicantsCount = project.applicants.filter(
-//       applicant => applicant.status === 'approved'
-//     ).length;
-    
-//     project.availableSlots = Math.max(
-//       project.teamSize - project.members.length - approvedApplicantsCount, 
-//       0
-//     );
-    
-//     // Mark notification as accepted
-//     notification.status = 'accepted';
-    
-//     // Save both project and notification
-//     await Promise.all([project.save(), notification.save()]);
-    
-//     // Add project to user's projects list
-//     const user = await User.findById(otherId);
-//     if (user && (!user.myProjects || !user.myProjects.includes(projectId))) {
-//       user.myProjects = user.myProjects ? [...user.myProjects, projectId] : [projectId];
-//       await user.save();
-//     }
-    
-//     res.status(200).json({
-//       success: true,
-//       msg: "Application accepted! User has joined the project.",
-//       project: {
-//         _id: project._id,
-//         title: project.title,
-//         members: project.members.length
-//       }
-//     });
-    
-//   } catch (error) {
-//     console.error("Error accepting project application:", error);
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
-
 export const acceptProjectApplication = async (req, res) => {
   try {
     const { projectId, otherId, notificationId } = req.body;
@@ -639,12 +481,6 @@ export const acceptProjectApplication = async (req, res) => {
     // Save changes
     await Promise.all([project.save(), notification.save()]);
 
-    // // Update user's project list
-    // const user = await User.findById(otherId);
-    // if (user && !user.myProjects.includes(projectId)) {
-    //   user.myProjects.push(projectId);
-    //   await user.save();
-    // }
 		await User.findByIdAndUpdate(otherId, {
 			$addToSet: { myProjects: projectId },
 		});
